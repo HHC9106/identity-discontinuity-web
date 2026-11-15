@@ -1,0 +1,48 @@
+# Dependencies and generated output
+node_modules/
+dist/
+.vite/
+coverage/
+playwright-report/
+test-results/
+.DS_Store
+*.log
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.codex/
+.agents/
+.aws/
+
+# Local historical source and unpublished research (never publish this workspace history)
+/2024 ref/
+/identity-discontinuity-web/
+/docs/
+/research/
+/project/
+/private/
+/unpublished/
+/archive-originals/
+*.zip
+*.psd
+*.ai
+*.indd
+*.mov
+*.mp4
+AGENTS.md
+
+# Only source/rights-reviewed website assets may enter public/archives/.
+
+# Local drafts and credential backups
+*.bak
+*.tmp
+*.p12
+*.pfx
+
+# Python environments, if used later for research tooling
+.venv/
+venv/
