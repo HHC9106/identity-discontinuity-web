@@ -85,14 +85,28 @@ Not a chronological encyclopedia of Census changes. The artwork interrogates the
 - Do not introduce D3, Canvas, PixiJS, ScrollTrigger or global stores without a demonstrated need and explicit approval where packages/setup are involved. Chapter navigation is state-based, not tied to scroll position.
 - The validated local runtime is Node `22.23.5 darwin arm64` in the project-specific NVM directory. The exact startup procedure is in `README.md`; no system Node or shell profile change is required.
 
+### Phase 1 spatial composition deliverable (Review A, not artistic approval)
+- Treat overall stage composition, proportions, negative space and network bounds as core Phase 1 work, not decorative styling.
+- Make category order, grouping, group spacing, node positions and label offsets explicit adjustable layout parameters. Make year order, temporal positions/spacing, node positions and label offsets independently adjustable; do not assume category and year indexes should align.
+- Keep category-to-year edge geometry, density/topology and visual hierarchy inspectable. Prototype data controls which edges exist; layout must not invent or alter endpoints. Straight data-edge geometry is the current study, not a rule that approves any final composition.
+- Desktop is the primary artwork surface: prioritize the complete source-derived composition, all categories/years, line density, spacing, legibility, motion and interaction. Do not reduce source density or compromise the desktop layout to make every label fit on a phone.
+- On mobile, keep the same network renderer and data, support swipe exploration and a category/edge selector where useful, and prevent page-level overflow. Do not require all category labels to be legible simultaneously. A focused edge index is optional assistance, not a Phase 1 gate. The complete artwork is best experienced on a larger screen; advanced mobile parity is SHOULD HAVE.
+- Neither mandatory left-to-right scrolling nor force-directed placement is required. Mobile and desktop share one renderer and one endpoint model.
+- Include named reserved zones for chapter navigation, contextual text and future archive overlays when tuning the full stage composition.
+- Reconstruct the network from the actual 2024 JavaScript draw logic: preserve source order, source maps, raw repeated presentations, stable IDs, colors and code references. Mark it source-derived / historically unverified; reconstruction is not Census verification.
+- Provide Preset A (normalized 2024 composition reference) and Preset B (web-native palette-group study) using the same combined display graph: 161 normalized 2024-script edges plus 48 separately typed prior-exhibition White/Black mappings. Neither preset changes endpoints or force-positions nodes. Both remain provisional until review.
+- Treat category/year readability as an open Review A question. Preset A preserves very small source-relative labels; Preset B uses compact category display labels with full-name hover/readout. A non-overlap measurement is not a legibility pass; do not mark labels approved until Creative Director review.
+- Review A must show both full-network presets, category–year relationships, Chapter 1's full-network red/blue emphasis (original Phase 2 focus plus the prior-exhibition Black mappings) and Opening feasibility. Keep source/exhibition provenance distinct, show all data anomalies, and preserve the complete graph.
+
 ### Minimal state model
 `intro → overview → chapter-entrance → chapter-explore → (archive-preview | archive-detail) → chapter-explore → overview/next-chapter`
 
 ### Data cautions from 2024 source
-- Includes ~32 labels, historical years through 2020 and a *2050* speculative marker, but not per-edge citations.
-- `White` / `Black` year arrays empty in portions; do not invent edges.
-- `Mixed Black` includes duplicate 1880 and needs cleanup after historical verification.
-- Race and Hispanic-origin selections are mixed in one array; separate by question type in the new model.
+- The active 2024 setup produces 32 category labels, 24 historical year labels through 2020, one speculative 2050 node, 475 phase draw records and 161 unique category-year pairs. The exact ordered extraction is independently compared with original `setup()` by `scripts/verify-original-network.mjs`; see `docs/SOURCE_2024_EXTRACTION.md`. The rendered network adds 48 prior-exhibition mappings separately; display total 209.
+- `White` and `Black` have empty 2024-script `firstGroups` arrays and no active 2024-script edges. The Creative Director confirmed the previous physical exhibition included White and Black lines across the historical year sequence; represent these as a separate 48-edge exhibit-derived layer (24 years each), not as extracted script edges. Mark year-level equivalence historically unverified; 2050 receives no such edge.
+- `Mixed Black–1880` occurs twice in `firstGroups`; Chapter 3 also repeats three Chamorro endpoints through Guam and Northern Mariana. Preserve the raw records and route metadata while normalizing one overview edge per unique category/year pair.
+- Race/color, national-origin, Hispanic-origin and “Other” labels are mixed without per-edge question type, geographic scope or citations. Keep all mappings source-derived / historically unverified; do not silently correct them.
+- `secondGroups` is declared but inactive; Chapter 1 uses `secondGroupsByYears`. The 2050 marker has no edge and is not a Census year.
 - The original Ch.2 shuffles **colors**, not endpoints; original Ch.3 curves are cubic Béziers; original future marker does not implement the newly proposed branching network.
 
 ## 6. Deliverable for November 29 (MVP acceptance criteria)
@@ -141,4 +155,4 @@ Notion source pages:
 
 ## 9. Implementation handoff
 
-This file is the active Build Spec. Use it with `AGENTS.md` and the three `project/` workflow documents. The local environment baseline passes, but Phase 0 remains open for data/rights and publication-safety checks. Do not begin Phase 1 until the Creative Director approves it. Notion remains a research library, not an automatically synchronized development database.
+This file is the active Build Spec. Use it with `AGENTS.md` and the three `project/` workflow documents. Phase 1 is authorized; the source-derived network and A/B compositions are being prepared for Creative Review A. Historical accuracy, archive rights and publication-safety checks remain open. Notion remains a research library, not an automatically synchronized development database.
