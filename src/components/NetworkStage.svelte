@@ -8,7 +8,40 @@
   export let diffuseGradient = false;
   export let onSelect: (edgeId: string) => void = () => {};
 
+  let hoveredEdgeId = '';
+  let focusedEdgeId = '';
   $: selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
+
+  function reportActiveEdge() {
+    onSelect(focusedEdgeId || hoveredEdgeId);
+  }
+
+  function handlePointerEnter(edgeId: string) {
+    hoveredEdgeId = edgeId;
+    reportActiveEdge();
+  }
+
+  function handlePointerLeave(event: PointerEvent, edgeId: string) {
+    if (hoveredEdgeId !== edgeId) return;
+    hoveredEdgeId = '';
+    const target = event.currentTarget;
+    const focusVisible = target instanceof SVGElement && target.matches(':focus-visible');
+    if (focusedEdgeId === edgeId && !focusVisible) {
+      focusedEdgeId = '';
+    }
+    reportActiveEdge();
+  }
+
+  function handleFocus(edgeId: string) {
+    focusedEdgeId = edgeId;
+    reportActiveEdge();
+  }
+
+  function handleBlur(edgeId: string) {
+    if (focusedEdgeId !== edgeId) return;
+    focusedEdgeId = '';
+    reportActiveEdge();
+  }
 
   function activateEdge(event: KeyboardEvent, edgeId: string) {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -108,8 +141,10 @@
         tabindex="0"
         aria-label={`${category.label} to ${years[yearIndex].label}, development sample edge`}
         aria-pressed={selectedEdgeId === edge.id}
-        onpointerenter={() => onSelect(edge.id)}
-        onfocus={() => onSelect(edge.id)}
+        onpointerenter={() => handlePointerEnter(edge.id)}
+        onpointerleave={(event) => handlePointerLeave(event, edge.id)}
+        onfocus={() => handleFocus(edge.id)}
+        onblur={() => handleBlur(edge.id)}
         onclick={() => onSelect(edge.id)}
         onkeydown={(event) => activateEdge(event, edge.id)}
       />
