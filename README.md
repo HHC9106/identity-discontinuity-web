@@ -1,6 +1,6 @@
 # Identity Discontinuity 2026
 
-This is the development workspace for an original, research-led interactive artwork. The current app is a framework placeholder; the network, chapters and archive interactions have not been implemented. `2024 ref/` is read-only visual/technical reference material, not the required architecture or a verified data source.
+This is the development workspace for an original, research-led interactive artwork. The local Phase 1 app reconstructs 161 unique Category–Year edges from the 2024 script and adds 48 separately marked White/Black mappings confirmed as lines in the prior physical exhibition. Those additions are not part of the 2024 code extraction; their year-level historical equivalence is unverified. `2024 ref/` is read-only source material and has not been independently fact-checked. The combined 209-connection network is shown in two provisional desktop layouts.
 
 ## Runtime
 
@@ -21,6 +21,12 @@ Run project commands in that same shell:
 npm run check
 npm run build
 npm run dev
+```
+
+Verify the source extraction against the original p5 `setup()` draw output with:
+
+```sh
+node --experimental-strip-types scripts/verify-original-network.mjs
 ```
 
 The development URL is <http://127.0.0.1:5173/identity-discontinuity-web/>. After a successful build, `make preview` serves `dist/` at port 4173 under the same base path. `make install` runs `npm ci`; use it only for an explicitly approved dependency reinstallation, not routine startup.
