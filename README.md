@@ -31,6 +31,6 @@ Dependencies are project-local in `node_modules/`; this project does not use a P
 
 `public/archives/` is the only intended location for reviewed, publication-safe web assets; it is currently empty. Verify each item's source, rights, credit and relationship context before publishing. Do not imply that an archival subject belonged to a Census category without evidence. Do not publish `2024 ref/`, research, private material, credentials or uncleared assets.
 
-The current working branch is `develop-framework`. The local documentation baseline tracks `README.md`, `docs/CURRENT_BUILD_SPEC.md` and the `project/` workflow files; `AGENTS.md` is a local ignored working agreement and is not in the index. Application/configuration files remain untracked until explicitly selected. Ignored files may still exist in Git history, and ignore rules do not make a publication safe. No deployment workflow is present in the current worktree.
+The current working branch is `develop-framework`. Local commits now track the selected documentation and initial Svelte/Vite scaffold. `AGENTS.md` is a local ignored working agreement and is not in the index; `.vscode/settings.json` remains an untracked personal terminal-approval setting. Ignored files may still exist in Git history, and ignore rules do not make a publication safe. No deployment workflow is present in the current worktree.
 
 Staging, committing, pushing and deployment each require explicit authorization. A local build or Pages rehearsal is not proof of a tested live URL.
