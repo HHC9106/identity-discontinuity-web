@@ -25,7 +25,14 @@
   aria-label="Synthetic development network. Sample categories connect to sample years; no line represents verified Census history."
 >
   <defs>
-    <filter id="diffuse-halo" x="-40%" y="-40%" width="180%" height="180%">
+    <filter
+      id="diffuse-halo"
+      filterUnits="userSpaceOnUse"
+      x="-32"
+      y="-32"
+      width={stageSize.width + 64}
+      height={stageSize.height + 64}
+    >
       <feGaussianBlur stdDeviation={visual.diffuseBlur} />
     </filter>
     {#each edges.filter((edge) => edge.texture === 'diffuse') as edge (edge.id)}
