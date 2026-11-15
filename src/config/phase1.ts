@@ -5,6 +5,8 @@ export const visual = {
   grid: '#252a2c',
   neutralLine: '#91a0a1',
   diffuse: '#f07470',
+  diffuseGradientStart: '#e65f68',
+  diffuseGradientEnd: '#ffb0a1',
   crisp: '#79c9e8',
   accent: '#e0cf9a',
   dataLineWidth: 1.6,

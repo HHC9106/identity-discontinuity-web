@@ -5,6 +5,7 @@
 
   export let selectedEdgeId = '';
   export let effectMode: 'network' | 'chapter1' = 'network';
+  export let diffuseGradient = false;
   export let onSelect: (edgeId: string) => void = () => {};
 
   $: selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
@@ -27,6 +28,23 @@
     <filter id="diffuse-halo" x="-40%" y="-40%" width="180%" height="180%">
       <feGaussianBlur stdDeviation={visual.diffuseBlur} />
     </filter>
+    {#each edges.filter((edge) => edge.texture === 'diffuse') as edge (edge.id)}
+      {@const categoryIndex = categories.findIndex((category) => category.id === edge.categoryId)}
+      {@const yearIndex = years.findIndex((year) => year.id === edge.yearId)}
+      {@const start = categoryPoint(categoryIndex)}
+      {@const end = yearPoint(yearIndex)}
+      <linearGradient
+        id={`diffuse-gradient-${edge.id}`}
+        gradientUnits="userSpaceOnUse"
+        x1={start.x}
+        y1={start.y}
+        x2={end.x}
+        y2={end.y}
+      >
+        <stop offset="0%" stop-color={visual.diffuseGradientStart} />
+        <stop offset="100%" stop-color={visual.diffuseGradientEnd} />
+      </linearGradient>
+    {/each}
   </defs>
 
   <path class="axis-rule" d="M52 72 H1148" />
@@ -40,7 +58,8 @@
       {@const category = categories[categoryIndex]}
       {@const start = categoryPoint(categoryIndex)}
       {@const end = yearPoint(yearIndex)}
-      {@const color = effectMode === 'chapter1' ? (edge.texture === 'diffuse' ? visual.diffuse : visual.crisp) : visual.neutralLine}
+      {@const useGradient = effectMode === 'chapter1' && diffuseGradient && edge.texture === 'diffuse'}
+      {@const color = effectMode === 'chapter1' ? (edge.texture === 'diffuse' ? (useGradient ? `url(#diffuse-gradient-${edge.id})` : visual.diffuse) : visual.crisp) : visual.neutralLine}
       {#if effectMode === 'chapter1' && edge.texture === 'diffuse'}
         <line
           class="edge-halo"
@@ -48,7 +67,7 @@
           y1={start.y}
           x2={end.x}
           y2={end.y}
-          stroke={color}
+          stroke={useGradient ? `url(#diffuse-gradient-${edge.id})` : color}
           stroke-width={visual.diffuseHaloWidth}
           filter="url(#diffuse-halo)"
           opacity="0.62"

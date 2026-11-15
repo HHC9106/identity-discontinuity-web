@@ -8,6 +8,7 @@
 
 	let scene: Scene = 'network';
 	let selectedEdgeId = edges[0].id;
+	let diffuseGradient = false;
 	let reducedMotion = false;
 	let sceneMessage = 'Clean Network · synthetic sample';
 
@@ -100,7 +101,7 @@
 			</div>
 
 			<div class="network-frame" class:chapter-one={scene === 'chapter1'}>
-				<NetworkStage {selectedEdgeId} effectMode={scene === 'chapter1' ? 'chapter1' : 'network'} onSelect={(edgeId) => (selectedEdgeId = edgeId)} />
+				<NetworkStage {selectedEdgeId} effectMode={scene === 'chapter1' ? 'chapter1' : 'network'} {diffuseGradient} onSelect={(edgeId) => (selectedEdgeId = edgeId)} />
 
 				{#if scene === 'opening'}
 					  <div class="opening-overlay" style={`--opening-duration:${motion.openingDurationMs}ms; --trace-duration:${motion.traceDurationMs}ms; --fragment-stagger:${motion.fragmentStaggerMs}ms`} onanimationend={finishOpening} aria-label="Opening montage feasibility prototype">
@@ -133,8 +134,16 @@
 					<span><i class="legend-line legend-diffuse"></i> Diffuse sample</span>
 					<span><i class="legend-line legend-crisp"></i> Crisp sample</span>
 				</div>
+				{#if scene === 'chapter1'}
+					<button class="gradient-toggle" aria-pressed={diffuseGradient} onclick={() => (diffuseGradient = !diffuseGradient)}>
+						<span aria-hidden="true">◒</span> {diffuseGradient ? 'Gradient wash on' : 'Try gradient wash'}
+					</button>
+				{/if}
 				<p class="identity-note">LINE GEOMETRY STAYS FIXED <b>·</b> TEXTURE CHANGES</p>
 			</div>
+			{#if scene === 'chapter1' && diffuseGradient}
+				<p class="gradient-note">ABSTRACT COLOR CONTINUUM ONLY · NOT A SKIN-TONE OR IDENTITY SCALE</p>
+			{/if}
 
 			<div class="study-note" aria-live="polite">
 				<span class="study-index">EDGE FOCUS</span>
