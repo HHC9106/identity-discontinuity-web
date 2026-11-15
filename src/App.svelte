@@ -118,6 +118,7 @@
 					</div>
 				{/if}
 			</div>
+			<p class="orientation-note">LANDSCAPE RECOMMENDED <span>·</span> Portrait view supports horizontal swiping.</p>
 
 			<div class="stage-footer">
 				<label class="mobile-edge-picker">

@@ -75,6 +75,7 @@ main, .topbar { width: min(1480px, 100% - 96px); margin-inline: auto; }
 
 .network-frame { position: relative; overflow: hidden; background-color: #121617; background-image: linear-gradient(#b8c2c20a 1px, transparent 1px), linear-gradient(90deg, #b8c2c20a 1px, transparent 1px); background-size: 30px 30px; }
 .network-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.orientation-note { display: none; }
 .axis-rule { fill: none; stroke: #394142; stroke-width: 1; }
 .axis-caption { fill: #7e898a; font-size: 10px; }
 .axis-caption-right { text-anchor: end; }
@@ -186,6 +187,8 @@ main, .topbar { width: min(1480px, 100% - 96px); margin-inline: auto; }
 	.network-frame { overflow-x: auto; overscroll-behavior-inline: contain; }
 	.network-svg { width: 760px; max-width: none; }
 	.network-readout { min-width: 760px; padding-inline: 14px; }
+	.orientation-note { display: block; margin: 0; padding: 8px 12px; border-top: 1px solid #282e30; color: #a4acab; font: 8px/1.5 "SFMono-Regular", Consolas, monospace; letter-spacing: .45px; }
+	.orientation-note span { padding-inline: 3px; color: var(--accent); }
 	.stage-footer { align-items: stretch; flex-direction: column; gap: 12px; padding: 13px 12px; }
 	.mobile-edge-picker { display: grid; gap: 7px; color: var(--muted); font: 8px "SFMono-Regular", Consolas, monospace; letter-spacing: .8px; }
 	.mobile-edge-picker select { width: 100%; min-height: 42px; border: 1px solid #586161; border-radius: 0; background: #191f20; color: var(--paper); padding: 0 10px; font-size: 12px; }
@@ -204,6 +207,10 @@ main, .topbar { width: min(1480px, 100% - 96px); margin-inline: auto; }
 	.note-two { right: 2%; top: 8%; scale: .74; transform-origin: top right; }
 	.note-three { right: 9%; bottom: 5%; scale: .75; transform-origin: bottom right; }
 	.montage-center b { font-size: 24px; }
+}
+
+@media (max-width: 560px) and (orientation: landscape) {
+	.orientation-note { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
