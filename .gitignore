@@ -17,6 +17,7 @@ test-results/
 .codex/
 .agents/
 .aws/
+.vscode/settings.json
 
 # Local historical source and unpublished research (never publish this workspace history)
 /2024 ref/
