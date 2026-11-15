@@ -7,12 +7,12 @@
 	type Scene = 'network' | 'chapter1' | 'opening';
 
 	let scene: Scene = 'network';
-	let selectedEdgeId = edges[0].id;
+	let selectedEdgeId = '';
 	let diffuseGradient = false;
 	let reducedMotion = false;
 	let sceneMessage = 'Clean Network · synthetic sample';
 
-	$: selectedEdge = edges.find((edge) => edge.id === selectedEdgeId) ?? edges[0];
+	$: selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
 
 	onMount(() => {
 		const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -123,6 +123,7 @@
 				<label class="mobile-edge-picker">
 					<span>FOCUS A SAMPLE EDGE</span>
 					<select bind:value={selectedEdgeId} aria-label="Select a synthetic category-to-year edge">
+							<option value="">Choose a sample edge</option>
 						{#each edges as edge (edge.id)}
 							{@const category = categories.find((item) => item.id === edge.categoryId)}
 							{@const year = years.find((item) => item.id === edge.yearId)}
@@ -147,8 +148,13 @@
 
 			<div class="study-note" aria-live="polite">
 				<span class="study-index">EDGE FOCUS</span>
-				<p><b>{categories.find((category) => category.id === selectedEdge?.categoryId)?.label}</b> connects to <b>{years.find((year) => year.id === selectedEdge?.yearId)?.label}</b>.</p>
-				<span class="study-id">{selectedEdge?.id}</span>
+				{#if selectedEdge}
+					<p><b>{categories.find((category) => category.id === selectedEdge.categoryId)?.label}</b> connects to <b>{years.find((year) => year.id === selectedEdge.yearId)?.label}</b>.</p>
+					<span class="study-id">{selectedEdge.id}</span>
+				{:else}
+					<p class="empty-study-hint">Select or focus a sample line to inspect its stable ID.</p>
+					<span class="study-id">NO EDGE SELECTED</span>
+				{/if}
 			</div>
 		</section>
 

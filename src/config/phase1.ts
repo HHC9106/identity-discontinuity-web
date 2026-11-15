@@ -11,6 +11,10 @@ export const visual = {
   accent: '#e0cf9a',
   dataLineWidth: 1.6,
   selectedLineWidth: 3,
+  neutralOpacity: 0.72,
+  diffuseOpacity: 0.76,
+  crispOpacity: 0.94,
+  selectedOpacity: 1,
   diffuseHaloWidth: 13,
   diffuseBlur: 7,
 };

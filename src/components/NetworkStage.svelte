@@ -49,7 +49,7 @@
 
   <path class="axis-rule" d="M52 72 H1148" />
   <text class="axis-caption" x="52" y="48">SYNTHETIC CATEGORY SET</text>
-  <text class="axis-caption axis-caption-right" x="1148" y="48">SYNTHETIC YEAR SET</text>
+  <text class="axis-caption" x="52" y="478">SYNTHETIC YEAR POINTS</text>
 
   <g class="edge-layer">
     {#each edges as edge (edge.id)}
@@ -60,6 +60,11 @@
       {@const end = yearPoint(yearIndex)}
       {@const useGradient = effectMode === 'chapter1' && diffuseGradient && edge.texture === 'diffuse'}
       {@const color = effectMode === 'chapter1' ? (edge.texture === 'diffuse' ? (useGradient ? `url(#diffuse-gradient-${edge.id})` : visual.diffuse) : visual.crisp) : visual.neutralLine}
+      {@const edgeOpacity = selectedEdgeId === edge.id
+        ? visual.selectedOpacity
+        : effectMode === 'chapter1'
+          ? (edge.texture === 'crisp' ? visual.crispOpacity : visual.diffuseOpacity)
+          : visual.neutralOpacity}
       {#if effectMode === 'chapter1' && edge.texture === 'diffuse'}
         <line
           class="edge-halo"
@@ -83,7 +88,7 @@
         y2={end.y}
         stroke={color}
         stroke-width={selectedEdgeId === edge.id ? visual.selectedLineWidth : visual.dataLineWidth}
-        opacity={selectedEdgeId && selectedEdgeId !== edge.id ? 0.14 : 0.88}
+        opacity={edgeOpacity}
         aria-hidden="true"
       />
       <line
@@ -115,8 +120,8 @@
         cy={point.y}
         r="6"
       />
-      <text class="category-label" x={point.x + 20} y={point.y - 5}>{category.label}</text>
-      <text class="category-kind" x={point.x + 20} y={point.y + 15}>{category.groupLabel}</text>
+      <text class="category-label" x={point.x} y={point.y - 27} text-anchor="middle">{category.label}</text>
+      <text class="category-kind" x={point.x} y={point.y - 43} text-anchor="middle">{category.groupLabel}</text>
     {/each}
   </g>
 
