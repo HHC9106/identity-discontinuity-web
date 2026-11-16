@@ -138,7 +138,6 @@
 						<span class="tab-index">01</span> Color / origin
 					</button>
 				</div>
-				<button class="opening-button" onclick={() => (viewMode = 'artwork')}>Open Artwork View</button>
 				<button class="opening-button" onclick={playOpening} disabled={scene === 'opening'}>
 					<span aria-hidden="true">↗</span> Run Opening study
 				</button>
