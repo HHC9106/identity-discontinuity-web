@@ -14,6 +14,7 @@
 	export let selectedEdgeId = '';
 	export let effectMode: EffectMode = 'network';
 	export let layoutPreset: LayoutPresetId = 'A';
+	export let artworkView = false;
 	export let diffuseGradient = false;
 	export let onSelect: (edgeId: string) => void = () => {};
 
@@ -129,8 +130,10 @@
 	{#if networkLayout.frame}
 		<rect class="reference-frame" x={networkLayout.frame.left * networkLayout.stage.width} y={networkLayout.frame.top * networkLayout.stage.height} width={networkLayout.frame.width * networkLayout.stage.width} height={networkLayout.frame.height * networkLayout.stage.height} />
 	{/if}
-	<text class="axis-caption" x={networkLayout.preset.networkBounds.left * networkLayout.stage.width} y={networkLayout.preset.networkBounds.top * networkLayout.stage.height - 14}>{layoutPreset === 'A' ? 'CATEGORY LABELS · ORIGINAL SOURCE ORDER' : 'CATEGORY LABELS · ORIGINAL PALETTE GROUPS'}</text>
-	<text class="axis-caption" x={networkLayout.preset.networkBounds.left * networkLayout.stage.width} y={networkLayout.preset.networkBounds.bottom * networkLayout.stage.height + 23}>CENSUS YEAR LABELS · 2050* IS SPECULATIVE</text>
+	{#if !artworkView}
+		<text class="axis-caption" x={networkLayout.preset.networkBounds.left * networkLayout.stage.width} y={networkLayout.preset.networkBounds.top * networkLayout.stage.height - 14}>{layoutPreset === 'A' ? 'CATEGORY LABELS · ORIGINAL SOURCE ORDER' : 'CATEGORY LABELS · ORIGINAL PALETTE GROUPS'}</text>
+		<text class="axis-caption" x={networkLayout.preset.networkBounds.left * networkLayout.stage.width} y={networkLayout.preset.networkBounds.bottom * networkLayout.stage.height + 23}>CENSUS YEAR LABELS · 2050* IS SPECULATIVE</text>
+	{/if}
 	{#if inspectedCategory}
 		<text class="category-inspector" x={networkLayout.stage.width / 2} y="38" text-anchor="middle" fill={inspectedCategory.color}>{inspectedCategory.label} · {edges.filter(({ categoryId }) => categoryId === inspectedCategory.id).length} CONNECTIONS</text>
 	{/if}
@@ -228,13 +231,13 @@
 		<span>{categoryById[selectedEdge.categoryId].label}</span>
 		<span class="readout-connector">to</span>
 		<span>{yearById[selectedEdge.yearId].year}</span>
-		<span class="readout-type">{'provenance' in selectedEdge && selectedEdge.provenance === 'prior physical exhibition mapping' ? 'PRIOR EXHIBITION MAPPING · YEAR EQUIVALENCE UNVERIFIED' : `2024 SOURCE EDGE · ${selectedEdge.id} · PHASES ${selectedPhases} · ${selectedDraws.length} RAW DRAW RECORDS`}</span>
+		<span class="readout-type">{artworkView ? ('provenance' in selectedEdge && selectedEdge.provenance === 'prior physical exhibition mapping' ? 'PRIOR EXHIBITION MAPPING · HISTORICAL EQUIVALENCE UNVERIFIED' : 'SOURCE-DERIVED · HISTORICALLY UNVERIFIED') : ('provenance' in selectedEdge && selectedEdge.provenance === 'prior physical exhibition mapping' ? 'PRIOR EXHIBITION MAPPING · YEAR EQUIVALENCE UNVERIFIED' : `2024 SOURCE EDGE · ${selectedEdge.id} · PHASES ${selectedPhases} · ${selectedDraws.length} RAW DRAW RECORDS`)}</span>
 	{:else if inspectedCategory}
 		<span class="readout-dot" style={`--readout-color:${inspectedCategory.color}`}></span>
 		<span class="readout-category-kicker">CATEGORY</span>
 		<strong class="readout-full-category">{inspectedCategory.label}</strong>
-		<span class="readout-type">{edges.filter(({ categoryId }) => categoryId === inspectedCategory.id).length} DISPLAYED CONNECTIONS · MIXED PROVENANCE</span>
+		<span class="readout-type">{edges.filter(({ categoryId }) => categoryId === inspectedCategory.id).length} {artworkView ? 'CONNECTIONS' : 'DISPLAYED CONNECTIONS · MIXED PROVENANCE'}</span>
 	{:else}
-		<span class="readout-hint">{categories.length} source labels · {years.length - 1} historical years · 1 speculative marker · {sourceScriptEdges.length} 2024-script edges + {edges.length - sourceScriptEdges.length} prior-exhibition mappings</span>
+		<span class="readout-hint">{artworkView ? 'Select an edge or category to focus the network' : `${categories.length} source labels · ${years.length - 1} historical years · 1 speculative marker · ${sourceScriptEdges.length} 2024-script edges + ${edges.length - sourceScriptEdges.length} prior-exhibition mappings`}</span>
 	{/if}
 </div>

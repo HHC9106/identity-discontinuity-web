@@ -6,9 +6,11 @@
 	import { layoutPresets, type LayoutPresetId } from './layout';
 
 	type Scene = 'network' | 'chapter1' | 'opening';
+	type ViewMode = 'artwork' | 'review';
 
+	let viewMode: ViewMode = 'artwork';
 	let scene: Scene = 'network';
-	let layoutPreset: LayoutPresetId = 'A';
+	let layoutPreset: LayoutPresetId = 'B';
 	let layoutManuallySelected = false;
 	let isNarrowLayout = false;
 	let mobileView: 'index' | 'network' = 'network';
@@ -36,7 +38,7 @@
 		};
 		const updateLayout = () => {
 			isNarrowLayout = narrowLayout.matches;
-			if (!layoutManuallySelected) layoutPreset = isNarrowLayout ? 'B' : 'A';
+			if (!layoutManuallySelected) layoutPreset = 'B';
 		};
 
 		updatePreference();
@@ -94,7 +96,8 @@
 		<meta name="description" content="Source-derived reconstruction of the 2024 Identity Discontinuity network; historical relationships are not independently verified." />
 </svelte:head>
 
-<div class="app-shell" style={`--phase1-background:${visual.background};--phase1-paper:${visual.foreground};--phase1-muted:${visual.muted};--phase1-grid:${visual.grid};--phase1-red:${visual.diffuse};--phase1-blue:${visual.crisp};--phase1-accent:${visual.accent};--phase1-line-width:${visual.dataLineWidth}px;--phase1-selected-line-width:${visual.selectedLineWidth}px;--phase1-halo-width:${visual.diffuseHaloWidth}px;--phase1-blur:${visual.diffuseBlur}px;--network-mobile-width:${activeLayout.mobileCanvasWidth}px;--edge-hit-width:${activeLayout.edgeHitWidth}px;--edge-hit-width-mobile:${activeLayout.mobileEdgeHitWidth}px;--archive-overlay-inset-top:${activeLayout.reserved.archiveOverlayInset.top * 100}%;--archive-overlay-inset-right:${activeLayout.reserved.archiveOverlayInset.right * 100}%;--archive-overlay-inset-bottom:${activeLayout.reserved.archiveOverlayInset.bottom * 100}%;--archive-overlay-inset-left:${activeLayout.reserved.archiveOverlayInset.left * 100}%;--reduced-motion-duration:${motion.reducedMotionDurationMs}ms`}>
+	<div class="app-shell" class:artwork-mode={viewMode === 'artwork'} style={`--phase1-background:${visual.background};--phase1-paper:${visual.foreground};--phase1-muted:${visual.muted};--phase1-grid:${visual.grid};--phase1-red:${visual.diffuse};--phase1-blue:${visual.crisp};--phase1-accent:${visual.accent};--phase1-line-width:${visual.dataLineWidth}px;--phase1-selected-line-width:${visual.selectedLineWidth}px;--phase1-halo-width:${visual.diffuseHaloWidth}px;--phase1-blur:${visual.diffuseBlur}px;--network-mobile-width:${activeLayout.mobileCanvasWidth}px;--edge-hit-width:${activeLayout.edgeHitWidth}px;--edge-hit-width-mobile:${activeLayout.mobileEdgeHitWidth}px;--archive-overlay-inset-top:${activeLayout.reserved.archiveOverlayInset.top * 100}%;--archive-overlay-inset-right:${activeLayout.reserved.archiveOverlayInset.right * 100}%;--archive-overlay-inset-bottom:${activeLayout.reserved.archiveOverlayInset.bottom * 100}%;--archive-overlay-inset-left:${activeLayout.reserved.archiveOverlayInset.left * 100}%;--reduced-motion-duration:${motion.reducedMotionDurationMs}ms`}>
+	{#if viewMode === 'review'}
 	<header class="topbar">
 		<a class="wordmark" href="#top" aria-label="Identity Discontinuity home">
 			<span class="wordmark-mark" aria-hidden="true">ID</span>
@@ -104,7 +107,7 @@
 			<span class="edition-kicker">INTERACTIVE ARTWORK · 2026</span>
 			<span class="edition-title">Classification is a choice.</span>
 		</div>
-		<div class="review-stamp"><span>LOCAL</span><span>STUDY 01</span></div>
+		<div class="review-stamp"><span>LOCAL</span><span>STUDY 01</span><button class="artwork-view-button" onclick={() => (viewMode = 'artwork')}>Open Artwork View</button></div>
 	</header>
 
 	<main id="top">
@@ -135,6 +138,7 @@
 						<span class="tab-index">01</span> Color / origin
 					</button>
 				</div>
+				<button class="opening-button" onclick={() => (viewMode = 'artwork')}>Open Artwork View</button>
 				<button class="opening-button" onclick={playOpening} disabled={scene === 'opening'}>
 					<span aria-hidden="true">↗</span> Run Opening study
 				</button>
@@ -262,4 +266,12 @@
 			<span>HISTORICAL DATA NOT VERIFIED</span>
 		</footer>
 	</main>
+	{:else}
+		<main class="artwork-viewport" aria-label="Artwork View · full Category-Year network">
+			<div class="artwork-network-frame" class:chapter-one={scene === 'chapter1'}>
+				<NetworkStage {selectedEdgeId} {layoutPreset} effectMode="network" artworkView={true} {diffuseGradient} onSelect={(edgeId) => (selectedEdgeId = edgeId)} />
+			</div>
+			<button class="artwork-review-button" onclick={() => (viewMode = 'review')}>Review / Debug</button>
+		</main>
+	{/if}
 </div>

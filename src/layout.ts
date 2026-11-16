@@ -61,7 +61,7 @@ export const layoutPresets: Record<LayoutPresetId, LayoutPreset> = {
 	A: {
 		id: 'A',
 		label: 'A · Original Composition Reference',
-		stage: { width: 1200, height: 675 },
+		stage: { width: 1920, height: 1080 },
 		frame: { left: sourcePlot.left, top: 200 / 1080, width: sourcePlot.width, height: 340 / 1080 },
 		networkBounds: {
 			left: sourcePlot.left,
@@ -96,22 +96,22 @@ export const layoutPresets: Record<LayoutPresetId, LayoutPreset> = {
 	B: {
 		id: 'B',
 		label: 'B · Web-Native Composition Study',
-		stage: { width: 1200, height: 740 },
-		networkBounds: { left: 0.04, right: 0.96, top: 0.12, bottom: 0.85 },
-		categoryRow: 0.22,
-		categorySlots: { start: 0.04, end: 0.96 },
+		stage: { width: 1920, height: 1080 },
+		networkBounds: { left: 0.035, right: 0.965, top: 0.15, bottom: 0.93 },
+		categoryRow: 0.24,
+		categorySlots: { start: 0.035, end: 0.965 },
 		categoryGroups: webCategoryGroups,
 		categoryGroupGap: 0.018,
-		yearRow: 0.76,
-		historicalYearSlots: { start: 0.055, end: 0.9 },
-		futureYearSlots: { 'year-2050': 0.975 },
+		yearRow: 0.86,
+		historicalYearSlots: { start: 0.045, end: 0.88 },
+		futureYearSlots: { 'year-2050': 0.96 },
 		mobileCanvasWidth: 1480,
 		edgeHitWidth: 12,
 		mobileEdgeHitWidth: 18,
 		categoryLabel: {
 			offsetY: -8,
 			lineStep: 8,
-			fontSize: 9,
+			fontSize: 12,
 			displayLabels: {
 				white: 'White',
 				chinese: 'Chin.',
@@ -147,7 +147,7 @@ export const layoutPresets: Record<LayoutPresetId, LayoutPreset> = {
 				black: 'Black',
 			},
 		},
-		yearLabel: { offsetY: 17, fontSize: 9 },
+		yearLabel: { offsetY: 25, fontSize: 15 },
 		reserved: {
 			chapterNavigation: 'above-network',
 			contextualText: 'caption-and-readout',
