@@ -39,6 +39,7 @@
 		const updateLayout = () => {
 			isNarrowLayout = narrowLayout.matches;
 			if (!layoutManuallySelected) layoutPreset = 'B';
+			if (isNarrowLayout && viewMode === 'artwork') viewMode = 'review';
 		};
 
 		updatePreference();

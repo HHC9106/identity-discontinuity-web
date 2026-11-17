@@ -39,6 +39,11 @@
 	$: selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
 	$: inspectedCategoryId = hoveredCategoryId || selectedCategoryId;
 	$: inspectedCategory = categories.find(({ id }) => id === inspectedCategoryId);
+	$: inspectedCategoryEdges = inspectedCategory ? edges.filter(({ categoryId }) => categoryId === inspectedCategory.id) : [];
+	$: inspectedScriptEdgeCount = inspectedCategoryEdges.filter(({ provenance }) => provenance !== 'prior physical exhibition mapping').length;
+	$: inspectedExhibitionEdgeCount = inspectedCategoryEdges.length - inspectedScriptEdgeCount;
+	$: inspectedConnectedYears = inspectedCategoryEdges.slice().sort((left, right) => Number(yearById[left.yearId].year) - Number(yearById[right.yearId].year));
+	$: inspectedYearIds = new Set(inspectedCategoryEdges.map(({ yearId }) => yearId));
 	$: selectedDraws = selectedEdge && 'rawDrawRecordIds' in selectedEdge
 		? selectedEdge.rawDrawRecordIds.map((id) => rawDrawById[id]).filter(Boolean)
 		: [];
@@ -95,6 +100,12 @@
 	}
 
 	function activateCategory(event: KeyboardEvent, categoryId: string) {
+		if (event.key === 'Escape') {
+			selectedCategoryId = '';
+			hoveredCategoryId = '';
+			(event.currentTarget as SVGTextElement).blur();
+			return;
+		}
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
 			toggleCategorySelection(categoryId);
@@ -134,7 +145,7 @@
 		<text class="axis-caption" x={networkLayout.preset.networkBounds.left * networkLayout.stage.width} y={networkLayout.preset.networkBounds.top * networkLayout.stage.height - 14}>{layoutPreset === 'A' ? 'CATEGORY LABELS · ORIGINAL SOURCE ORDER' : 'CATEGORY LABELS · ORIGINAL PALETTE GROUPS'}</text>
 		<text class="axis-caption" x={networkLayout.preset.networkBounds.left * networkLayout.stage.width} y={networkLayout.preset.networkBounds.bottom * networkLayout.stage.height + 23}>CENSUS YEAR LABELS · 2050* IS SPECULATIVE</text>
 	{/if}
-	{#if inspectedCategory}
+	{#if inspectedCategory && !artworkView}
 		<text class="category-inspector" x={networkLayout.stage.width / 2} y="38" text-anchor="middle" fill={inspectedCategory.color}>{inspectedCategory.label} · {edges.filter(({ categoryId }) => categoryId === inspectedCategory.id).length} CONNECTIONS</text>
 	{/if}
 
@@ -159,7 +170,7 @@
 						? (diffuse ? visual.diffuseOpacity : visual.crispOpacity)
 						: visual.chapter1ContextOpacity
 				: inspectedCategoryId
-					? (categoryFocusEdge ? 1 : visual.chapter1ContextOpacity)
+					? (categoryFocusEdge ? 1 : visual.categoryFocusContextOpacity)
 					: visual.neutralOpacity}
 			{#if diffuse}
 				<line class="edge-halo" x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke={color} stroke-width={visual.diffuseHaloWidth} filter="url(#diffuse-halo)" opacity="0.62" aria-hidden="true" />
@@ -205,8 +216,8 @@
 			{@const point = networkLayout.categoryPoints[category.id]}
 			{@const labelLines = layoutPreset === 'A' ? category.labelLines : [networkLayout.preset.categoryLabel.displayLabels?.[category.id] ?? category.label]}
 			{@const labelY = point.y + networkLayout.preset.categoryLabel.offsetY - (labelLines.length - 1) * networkLayout.preset.categoryLabel.lineStep}
-			<circle class="category-node" class:diffuse-node={effectMode === 'chapter1' && (category.id === 'mixed-black' || category.id === 'black')} class:crisp-node={effectMode === 'chapter1' && phase2CategoryIds.has(category.id)} class:inspected-node={inspectedCategoryId === category.id} cx={point.x} cy={point.y} r={layoutPreset === 'A' ? 2.2 : 4} role="img" aria-label={category.label} style={`--source-category-color:${category.color}`} onpointerenter={() => inspectCategory(category.id)} onpointerleave={() => clearCategoryInspection(category.id)} />
-			<text class="category-label" class:inspected={inspectedCategoryId === category.id} x={point.x} y={labelY} text-anchor="middle" role="button" tabindex="0" aria-label={`Focus category ${category.label} and its source-derived edges`} aria-pressed={selectedCategoryId === category.id} style={`font-size:${networkLayout.preset.categoryLabel.fontSize}px`} onpointerenter={() => inspectCategory(category.id)} onpointerleave={() => clearCategoryInspection(category.id)} onfocus={() => inspectCategory(category.id)} onblur={() => clearCategoryInspection(category.id)} onclick={() => toggleCategorySelection(category.id)} onkeydown={(event) => activateCategory(event, category.id)}>
+			<circle class="category-node" class:diffuse-node={effectMode === 'chapter1' && (category.id === 'mixed-black' || category.id === 'black')} class:crisp-node={effectMode === 'chapter1' && phase2CategoryIds.has(category.id)} class:inspected-node={inspectedCategoryId === category.id} class:context-category-node={Boolean(inspectedCategoryId) && inspectedCategoryId !== category.id} cx={point.x} cy={point.y} r={layoutPreset === 'A' ? 2.2 : 4} role="img" aria-label={category.label} style={`--source-category-color:${category.color}`} onpointerenter={() => inspectCategory(category.id)} onpointerleave={() => clearCategoryInspection(category.id)} />
+			<text class="category-label" class:inspected={inspectedCategoryId === category.id} class:context-category-label={Boolean(inspectedCategoryId) && inspectedCategoryId !== category.id} x={point.x} y={labelY} text-anchor="middle" role="button" tabindex="0" aria-label={`Focus category ${category.label} and its source-derived edges`} aria-pressed={selectedCategoryId === category.id} style={`font-size:${networkLayout.preset.categoryLabel.fontSize}px`} onpointerenter={() => inspectCategory(category.id)} onpointerleave={() => clearCategoryInspection(category.id)} onfocus={() => inspectCategory(category.id)} onblur={() => clearCategoryInspection(category.id)} onclick={() => toggleCategorySelection(category.id)} onkeydown={(event) => activateCategory(event, category.id)}>
 				<title>{category.label}</title>
 				{#each labelLines as line, index (index)}
 					<tspan x={point.x} dy={index === 0 ? 0 : networkLayout.preset.categoryLabel.lineStep}>{line}</tspan>
@@ -218,26 +229,46 @@
 	<g class="year-layer">
 		{#each activeYears as year (year.id)}
 			{@const point = networkLayout.yearPoints[year.id]}
-			<path class="year-tick" d={`M${point.x} ${point.y - 7} v14`} />
-			<circle class:speculative-node={year.role === 'speculative-marker'} class="year-node" cx={point.x} cy={point.y} r={layoutPreset === 'A' ? 1.6 : 3.5} />
-			<text class="year-label" x={point.x} y={point.y + networkLayout.preset.yearLabel.offsetY} text-anchor="middle" style={`font-size:${networkLayout.preset.yearLabel.fontSize}px`}>{year.year}{year.role === 'speculative-marker' ? '*' : ''}</text>
+			<path class="year-tick" class:connected-year={inspectedYearIds.has(year.id)} class:context-year={Boolean(inspectedCategoryId) && !inspectedYearIds.has(year.id)} d={`M${point.x} ${point.y - 7} v14`} />
+			<circle class:speculative-node={year.role === 'speculative-marker'} class:connected-year={inspectedYearIds.has(year.id)} class:context-year={Boolean(inspectedCategoryId) && !inspectedYearIds.has(year.id)} class="year-node" cx={point.x} cy={point.y} r={layoutPreset === 'A' ? 1.6 : 3.5} />
+			<text class="year-label" class:connected-year={inspectedYearIds.has(year.id)} class:context-year={Boolean(inspectedCategoryId) && !inspectedYearIds.has(year.id)} x={point.x} y={point.y + networkLayout.preset.yearLabel.offsetY} text-anchor="middle" style={`font-size:${networkLayout.preset.yearLabel.fontSize}px`}>{year.year}{year.role === 'speculative-marker' ? '*' : ''}</text>
 		{/each}
 	</g>
 </svg>
 
-<div class="network-readout" aria-live="polite">
-	{#if selectedEdge}
-		<span class="readout-dot" style={`--readout-color:${categoryById[selectedEdge.categoryId].color}`}></span>
-		<span>{categoryById[selectedEdge.categoryId].label}</span>
-		<span class="readout-connector">to</span>
-		<span>{yearById[selectedEdge.yearId].year}</span>
-		<span class="readout-type">{artworkView ? ('provenance' in selectedEdge && selectedEdge.provenance === 'prior physical exhibition mapping' ? 'PRIOR EXHIBITION MAPPING · HISTORICAL EQUIVALENCE UNVERIFIED' : 'SOURCE-DERIVED · HISTORICALLY UNVERIFIED') : ('provenance' in selectedEdge && selectedEdge.provenance === 'prior physical exhibition mapping' ? 'PRIOR EXHIBITION MAPPING · YEAR EQUIVALENCE UNVERIFIED' : `2024 SOURCE EDGE · ${selectedEdge.id} · PHASES ${selectedPhases} · ${selectedDraws.length} RAW DRAW RECORDS`)}</span>
-	{:else if inspectedCategory}
-		<span class="readout-dot" style={`--readout-color:${inspectedCategory.color}`}></span>
-		<span class="readout-category-kicker">CATEGORY</span>
-		<strong class="readout-full-category">{inspectedCategory.label}</strong>
-		<span class="readout-type">{edges.filter(({ categoryId }) => categoryId === inspectedCategory.id).length} {artworkView ? 'CONNECTIONS' : 'DISPLAYED CONNECTIONS · MIXED PROVENANCE'}</span>
-	{:else}
-		<span class="readout-hint">{artworkView ? 'Select an edge or category to focus the network' : `${categories.length} source labels · ${years.length - 1} historical years · 1 speculative marker · ${sourceScriptEdges.length} 2024-script edges + ${edges.length - sourceScriptEdges.length} prior-exhibition mappings`}</span>
-	{/if}
-</div>
+{#if inspectedCategory && artworkView}
+	<section class="category-focus-panel" style={`--focus-category-color:${inspectedCategory.color}`} aria-label={`Focused category ${inspectedCategory.label}`} aria-live="polite">
+		<span class="focus-panel-kicker">CATEGORY FOCUS · {inspectedCategoryEdges.length} CONNECTIONS</span>
+		<h2>{inspectedCategory.label}</h2>
+		<div class="focus-panel-provenance">
+			{#if inspectedScriptEdgeCount}<span>{inspectedScriptEdgeCount} · 2024 SCRIPT</span>{/if}
+			{#if inspectedExhibitionEdgeCount}<span class="focus-exhibition-count">{inspectedExhibitionEdgeCount} · PRIOR EXHIBITION</span>{/if}
+		</div>
+		<p class="focus-panel-caveat">{inspectedExhibitionEdgeCount ? 'Prior-exhibition mappings; year-level Census equivalence is unverified.' : '2024 source-derived relationships; historical equivalence is unverified.'}</p>
+		<ol class="focus-year-list" aria-label="Connected year labels">
+			{#each inspectedConnectedYears as edge (edge.id)}
+				{@const exhibitionMapping = edge.provenance === 'prior physical exhibition mapping'}
+				<li class:exhibition-year={exhibitionMapping} aria-label={`${yearById[edge.yearId].year}${exhibitionMapping ? ', prior exhibition mapping, year-level equivalence unverified' : ', 2024 source-derived edge'}`}>{yearById[edge.yearId].year}</li>
+			{/each}
+		</ol>
+	</section>
+{/if}
+
+{#if !artworkView || !inspectedCategory || selectedEdge}
+	<div class="network-readout" aria-live="polite">
+		{#if selectedEdge}
+			<span class="readout-dot" style={`--readout-color:${categoryById[selectedEdge.categoryId].color}`}></span>
+			<span>{categoryById[selectedEdge.categoryId].label}</span>
+			<span class="readout-connector">to</span>
+			<span>{yearById[selectedEdge.yearId].year}</span>
+			<span class="readout-type">{artworkView ? ('provenance' in selectedEdge && selectedEdge.provenance === 'prior physical exhibition mapping' ? 'PRIOR EXHIBITION MAPPING · HISTORICAL EQUIVALENCE UNVERIFIED' : 'SOURCE-DERIVED · HISTORICALLY UNVERIFIED') : ('provenance' in selectedEdge && selectedEdge.provenance === 'prior physical exhibition mapping' ? 'PRIOR EXHIBITION MAPPING · YEAR EQUIVALENCE UNVERIFIED' : `2024 SOURCE EDGE · ${selectedEdge.id} · PHASES ${selectedPhases} · ${selectedDraws.length} RAW DRAW RECORDS`)}</span>
+		{:else if inspectedCategory}
+			<span class="readout-dot" style={`--readout-color:${inspectedCategory.color}`}></span>
+			<span class="readout-category-kicker">CATEGORY</span>
+			<strong class="readout-full-category">{inspectedCategory.label}</strong>
+			<span class="readout-type">{edges.filter(({ categoryId }) => categoryId === inspectedCategory.id).length} {artworkView ? 'CONNECTIONS' : 'DISPLAYED CONNECTIONS · MIXED PROVENANCE'}</span>
+		{:else}
+			<span class="readout-hint">{artworkView ? 'Select an edge or category to focus the network' : `${categories.length} source labels · ${years.length - 1} historical years · 1 speculative marker · ${sourceScriptEdges.length} 2024-script edges + ${edges.length - sourceScriptEdges.length} prior-exhibition mappings`}</span>
+		{/if}
+	</div>
+{/if}

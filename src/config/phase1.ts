@@ -16,6 +16,7 @@ export const visual = {
   crispOpacity: 0.9,
   chapter1ContextOpacity: 0.16,
   selectedOpacity: 1,
+  categoryFocusContextOpacity: 0.23,
   diffuseHaloWidth: 13,
   diffuseBlur: 7,
 };
