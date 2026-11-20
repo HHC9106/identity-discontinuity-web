@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import NetworkStage from './components/NetworkStage.svelte';
+	import NarrativeStage from './components/NarrativeStage.svelte';
 	import { categories, displayEdges as edges, edges as sourceScriptEdges, exhibitionSupplementEdges, extractionSummary, knownAnomalies, rawDrawRecords, years } from './data/sourceDerived2024';
 	import { motion, visual } from './config/phase1';
 	import { layoutPresets, type LayoutPresetId } from './layout';
@@ -97,6 +98,21 @@
 		<meta name="description" content="Source-derived reconstruction of the 2024 Identity Discontinuity network; historical relationships are not independently verified." />
 </svelte:head>
 
+{#snippet openingMontage(done: () => void)}
+	<div class="opening-overlay" style={`--opening-duration:${motion.openingDurationMs}ms; --trace-duration:${motion.traceDurationMs}ms; --fragment-stagger:${motion.fragmentStaggerMs}ms`} onanimationend={(event) => { if (event.target === event.currentTarget) done(); }} aria-label="Opening montage feasibility prototype">
+		<svg class="opening-traces" viewBox={`0 0 ${activeLayout.stage.width} ${activeLayout.stage.height}`} preserveAspectRatio="none" aria-hidden="true">
+			<path class="trace trace-red" style={`--trace-delay:${Math.round(motion.fragmentStaggerMs * 0.65)}ms`} d="M0 428 C210 410 280 90 560 186 S870 460 1200 96" />
+			<path class="trace trace-blue" style={`--trace-delay:${Math.round(motion.fragmentStaggerMs * 1.65)}ms`} d="M0 112 C260 220 315 518 650 356 S930 104 1200 472" />
+			<path class="trace trace-white" style={`--trace-delay:${Math.round(motion.fragmentStaggerMs * 2.6)}ms`} d="M120 600 C410 435 500 55 810 168 S1040 360 1200 270" />
+		</svg>
+		<div class="montage-note note-one" style={`--fragment-delay:${motion.fragmentStaggerMs}ms`}><span>FORM / 01</span><i></i><i></i><i></i><small>PLACEHOLDER</small></div>
+		<div class="montage-note note-two" style={`--fragment-delay:${motion.fragmentStaggerMs * 2}ms`}><span>FIELD NOTE / 02</span><b>NAME<br />THE FRAME</b><small>TEXT-ONLY STUDY</small></div>
+		<div class="montage-note note-three" style={`--fragment-delay:${motion.fragmentStaggerMs * 3}ms`}><span>MAP / 03</span><div class="map-lines"><i></i><i></i><i></i><i></i></div><small>ABSTRACT SHAPE</small></div>
+		<div class="montage-center" style={`--center-delay:${motion.centerDelayMs}ms`}><span>OPENING FEASIBILITY</span><b>Many traces.<br />One frame.</b></div>
+		<span class="opening-disclaimer">SOURCE-DERIVED NETWORK · ABSTRACT ARCHIVE PLACEHOLDERS ONLY</span>
+	</div>
+{/snippet}
+
 	<div class="app-shell" class:artwork-mode={viewMode === 'artwork'} style={`--phase1-background:${visual.background};--phase1-paper:${visual.foreground};--phase1-muted:${visual.muted};--phase1-grid:${visual.grid};--phase1-red:${visual.diffuse};--phase1-blue:${visual.crisp};--phase1-accent:${visual.accent};--phase1-line-width:${visual.dataLineWidth}px;--phase1-selected-line-width:${visual.selectedLineWidth}px;--phase1-halo-width:${visual.diffuseHaloWidth}px;--phase1-blur:${visual.diffuseBlur}px;--network-mobile-width:${activeLayout.mobileCanvasWidth}px;--edge-hit-width:${activeLayout.edgeHitWidth}px;--edge-hit-width-mobile:${activeLayout.mobileEdgeHitWidth}px;--archive-overlay-inset-top:${activeLayout.reserved.archiveOverlayInset.top * 100}%;--archive-overlay-inset-right:${activeLayout.reserved.archiveOverlayInset.right * 100}%;--archive-overlay-inset-bottom:${activeLayout.reserved.archiveOverlayInset.bottom * 100}%;--archive-overlay-inset-left:${activeLayout.reserved.archiveOverlayInset.left * 100}%;--reduced-motion-duration:${motion.reducedMotionDurationMs}ms`}>
 	{#if viewMode === 'review'}
 	<header class="topbar">
@@ -188,20 +204,7 @@
 			<div class="network-frame" class:chapter-one={scene === 'chapter1'}>
 				<NetworkStage {selectedEdgeId} {layoutPreset} effectMode={scene === 'chapter1' ? 'chapter1' : 'network'} {diffuseGradient} onSelect={(edgeId) => (selectedEdgeId = edgeId)} />
 
-				{#if scene === 'opening'}
-					  <div class="opening-overlay" style={`--opening-duration:${motion.openingDurationMs}ms; --trace-duration:${motion.traceDurationMs}ms; --fragment-stagger:${motion.fragmentStaggerMs}ms`} onanimationend={finishOpening} aria-label="Opening montage feasibility prototype">
-						<svg class="opening-traces" viewBox={`0 0 ${activeLayout.stage.width} ${activeLayout.stage.height}`} preserveAspectRatio="none" aria-hidden="true">
-								<path class="trace trace-red" style={`--trace-delay:${Math.round(motion.fragmentStaggerMs * 0.65)}ms`} d="M0 428 C210 410 280 90 560 186 S870 460 1200 96" />
-								<path class="trace trace-blue" style={`--trace-delay:${Math.round(motion.fragmentStaggerMs * 1.65)}ms`} d="M0 112 C260 220 315 518 650 356 S930 104 1200 472" />
-								<path class="trace trace-white" style={`--trace-delay:${Math.round(motion.fragmentStaggerMs * 2.6)}ms`} d="M120 600 C410 435 500 55 810 168 S1040 360 1200 270" />
-						</svg>
-							<div class="montage-note note-one" style={`--fragment-delay:${motion.fragmentStaggerMs}ms`}><span>FORM / 01</span><i></i><i></i><i></i><small>PLACEHOLDER</small></div>
-							<div class="montage-note note-two" style={`--fragment-delay:${motion.fragmentStaggerMs * 2}ms`}><span>FIELD NOTE / 02</span><b>NAME<br />THE FRAME</b><small>TEXT-ONLY STUDY</small></div>
-							<div class="montage-note note-three" style={`--fragment-delay:${motion.fragmentStaggerMs * 3}ms`}><span>MAP / 03</span><div class="map-lines"><i></i><i></i><i></i><i></i></div><small>ABSTRACT SHAPE</small></div>
-							<div class="montage-center" style={`--center-delay:${motion.centerDelayMs}ms`}><span>OPENING FEASIBILITY</span><b>Many traces.<br />One frame.</b></div>
-						<span class="opening-disclaimer">SOURCE-DERIVED NETWORK · ABSTRACT ARCHIVE PLACEHOLDERS ONLY</span>
-					</div>
-				{/if}
+				{#if scene === 'opening'}{@render openingMontage(finishOpening)}{/if}
 			</div>
 			{#if isNarrowLayout}<p class="orientation-note">ONE-ROW NETWORK · SWIPE LEFT/RIGHT TO EXPLORE ALL LABELS</p>{/if}
 
@@ -258,8 +261,8 @@
 	</main>
 	{:else}
 		<main class="artwork-viewport" aria-label="Artwork View · full Category-Year network">
-			<div class="artwork-network-frame" class:chapter-one={scene === 'chapter1'}>
-				<NetworkStage {selectedEdgeId} {layoutPreset} effectMode="network" artworkView={true} {diffuseGradient} onSelect={(edgeId) => (selectedEdgeId = edgeId)} />
+			<div class="artwork-network-frame">
+				<NarrativeStage {layoutPreset} {reducedMotion} opening={openingMontage} />
 			</div>
 			<button class="artwork-review-button" onclick={() => (viewMode = 'review')}>Review / Debug</button>
 		</main>

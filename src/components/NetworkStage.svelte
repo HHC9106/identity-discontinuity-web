@@ -8,6 +8,7 @@
 	} from '../data/sourceDerived2024';
 	import { createNetworkLayout, type LayoutPresetId } from '../layout';
 	import { visual } from '../config/phase1';
+	import { chapterOneEmphasis, narrativeVisual, revealRole, type Chapter } from '../config/narrative';
 
 	type EffectMode = 'network' | 'chapter1';
 	type Target = { kind: 'category' | 'edge'; id: string };
@@ -18,17 +19,24 @@
 	export let artworkView = false;
 	export let diffuseGradient = false;
 	export let onSelect: (edgeId: string) => void = () => {};
+	export let chapter: Chapter | undefined = undefined;
+	export let chapterEntering = false;
+	export let interactionEnabled = true;
 
 	const categoryById = Object.fromEntries(categories.map((category) => [category.id, category]));
 	const yearById = Object.fromEntries(years.map((year) => [year.id, year]));
 	const rawDrawById = Object.fromEntries(rawDrawRecords.map((record) => [record.id, record]));
 	const phase2EdgeIds = new Set(sourceScriptEdges
-		.filter((edge) => edge.rawDrawRecordIds.some((id) => rawDrawById[id]?.phase === 2))
+		.filter((edge) => edge.rawDrawRecordIds.some((id) => rawDrawById[id]?.phase === chapterOneEmphasis.scriptPhase))
 		.map(({ id }) => id));
 	const phase2CategoryIds = new Set(sourceScriptEdges
 		.filter((edge) => phase2EdgeIds.has(edge.id) && edge.categoryId !== 'mixed-black')
 		.map(({ categoryId }) => categoryId));
 	const edges = displayEdges;
+	const chapterOneEdges = new Set(edges.filter((edge) => phase2EdgeIds.has(edge.id) ||
+		(edge.categoryId === chapterOneEmphasis.exhibitionCategory && edge.provenance === 'prior physical exhibition mapping')).map(({ id }) => id));
+	const chapterOneCategories = new Set(edges.filter(({ id }) => chapterOneEdges.has(id)).map(({ categoryId }) => categoryId));
+	const chapterOneYears = new Set(edges.filter(({ id }) => chapterOneEdges.has(id)).map(({ yearId }) => yearId));
 	const edgeById = new Map(edges.map((edge) => [edge.id, edge]));
 	let pointerPreview: Target | undefined;
 	let keyboardPreview: Target | undefined;
@@ -51,8 +59,14 @@
 	$: inspectedConnectedYears = inspectedCategoryEdges.slice().sort((left, right) => Number(yearById[left.yearId].year) - Number(yearById[right.yearId].year));
 	$: inspectedYearIds = new Set(inspectedEdge ? [inspectedEdge.yearId] : inspectedCategoryEdges.map(({ yearId }) => yearId));
 	$: panelCategory = inspectedEdge ? categoryById[inspectedEdge.categoryId] : inspectedCategory;
+	$: if (!interactionEnabled) clear();
+
+	function chapterRole(inChapterOne: boolean, current: Chapter) {
+		return revealRole(inChapterOne ? ['chapter1'] : [], current);
+	}
 
 	function targetAt(event: MouseEvent): Target | undefined {
+		if (!interactionEnabled) return;
 		if (!(event.target instanceof Element)) return;
 		const category = event.target.closest<SVGGElement>('[data-category-id]');
 		if (category?.dataset.categoryId) return { kind: 'category', id: category.dataset.categoryId };
@@ -66,6 +80,7 @@
 		let nearestDistance = Infinity;
 		let previousDistance = Infinity;
 		for (const edge of edges) {
+			if (chapter && chapterRole(chapterOneEdges.has(edge.id), chapter) !== 'current') continue;
 			const start = networkLayout.categoryPoints[edge.categoryId];
 			const end = networkLayout.yearPoints[edge.yearId];
 			const dx = end.x - start.x;
@@ -136,6 +151,8 @@
 	class="network-svg"
 	class:reference-preset={layoutPreset === 'A'}
 	class:web-preset={layoutPreset === 'B'}
+	class:chapter-entering={chapterEntering}
+	class:narrative-reveal={Boolean(chapter)}
 	viewBox={`0 0 ${networkLayout.stage.width} ${networkLayout.stage.height}`}
 	role="group"
 	onpointermove={previewPointer}
@@ -176,19 +193,29 @@
 			{@const categoryFocusEdge = inspectedCategoryId === edge.categoryId}
 			{@const lineFocusEdge = inspectedEdge?.id === edge.id}
 			{@const exhibitSupplement = edge.provenance === 'prior physical exhibition mapping'}
-			{@const chapter1SourceEdge = effectMode === 'chapter1' && phase2EdgeIds.has(edge.id)}
-			{@const chapter1ExhibitionBlack = effectMode === 'chapter1' && exhibitSupplement && edge.categoryId === 'black'}
+			{@const role = chapter ? chapterRole(chapterOneEdges.has(edge.id), chapter) : undefined}
+			{@const edgeEnabled = interactionEnabled && (!role || role === 'current')}
+			{@const chapter1SourceEdge = (effectMode === 'chapter1' || chapter && role !== 'unrevealed') && phase2EdgeIds.has(edge.id)}
+			{@const chapter1ExhibitionBlack = (effectMode === 'chapter1' || chapter && role !== 'unrevealed') && exhibitSupplement && edge.categoryId === 'black'}
 			{@const chapter1FocusEdge = chapter1SourceEdge || chapter1ExhibitionBlack}
-			{@const diffuse = effectMode === 'chapter1' && (chapter1SourceEdge && edge.categoryId === 'mixed-black' || chapter1ExhibitionBlack)}
+			{@const diffuse = Boolean(chapter1SourceEdge && edge.categoryId === 'mixed-black' || chapter1ExhibitionBlack)}
 			{@const crisp = chapter1SourceEdge && edge.categoryId !== 'mixed-black'}
 			{@const color = diffuse ? (diffuseGradient ? `url(#diffuse-gradient-${edge.id})` : visual.diffuse) : crisp ? visual.crisp : category.color}
-			{@const baseOpacity = effectMode === 'chapter1' ? (chapter1FocusEdge ? (diffuse ? visual.diffuseOpacity : visual.crispOpacity) : visual.chapter1ContextOpacity) : visual.neutralOpacity}
-			{@const edgeOpacity = categoryFocusEdge || lineFocusEdge ? 1 : inspectedEdge ? baseOpacity * 0.72 : inspectedCategoryId ? Math.min(baseOpacity, visual.categoryFocusContextOpacity) : baseOpacity}
+			{@const baseOpacity = role ? narrativeVisual[role] : effectMode === 'chapter1' ? (chapter1FocusEdge ? (diffuse ? visual.diffuseOpacity : visual.crispOpacity) : visual.chapter1ContextOpacity) : visual.neutralOpacity}
+			{@const edgeOpacity = edgeEnabled && (categoryFocusEdge || lineFocusEdge) ? 1 : inspectedEdge ? baseOpacity * 0.72 : inspectedCategoryId ? Math.min(baseOpacity, visual.categoryFocusContextOpacity) : baseOpacity}
+			{@const haloOpacity = (role ? narrativeVisual.currentHalo * baseOpacity / narrativeVisual.current : 0.62) * (inspected && !categoryFocusEdge && !lineFocusEdge ? 0.48 : 1)}
+			{@const growing = chapterEntering && role === 'current'}
+			{#if growing}
+				<clipPath id={`chapter-growth-${edge.id}`} transform={`translate(${start.x} ${start.y}) rotate(${Math.atan2(end.y - start.y, end.x - start.x) * 180 / Math.PI})`}>
+					<rect class="chapter-growth" class:blue-growth={Boolean(crisp)} x="-28" y="-28" width={Math.hypot(end.x - start.x, end.y - start.y) + 56} height="56" />
+				</clipPath>
+			{/if}
 			{#if diffuse}
-				<line class="edge-halo" x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke={color} stroke-width={visual.diffuseHaloWidth} filter="url(#diffuse-halo)" opacity={inspected && !categoryFocusEdge && !lineFocusEdge ? 0.3 : 0.62} aria-hidden="true" />
+				<line class="edge-halo" data-reveal-role={role} x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke={color} stroke-width={visual.diffuseHaloWidth} filter="url(#diffuse-halo)" opacity={haloOpacity} clip-path={growing ? `url(#chapter-growth-${edge.id})` : undefined} aria-hidden="true" />
 			{/if}
 			<line
 				class="data-edge"
+				data-reveal-role={role}
 				class:line-focus-edge={lineFocusEdge}
 				class:diffuse-edge={diffuse}
 				class:crisp-edge={crisp}
@@ -201,17 +228,20 @@
 				stroke={color}
 				stroke-width={lineFocusEdge || categoryFocusEdge ? visual.selectedLineWidth : visual.dataLineWidth}
 				opacity={edgeOpacity}
+				clip-path={growing ? `url(#chapter-growth-${edge.id})` : undefined}
 				aria-hidden="true"
 			/>
 			<line
 				class="edge-hit"
+				class:inactive-hit={!edgeEnabled}
 				data-edge-id={edge.id}
 				x1={start.x}
 				y1={start.y}
 				x2={end.x}
 				y2={end.y}
 				role="button"
-				tabindex="0"
+				tabindex={edgeEnabled ? 0 : -1}
+				aria-hidden={edgeEnabled ? undefined : true}
 				aria-label={`${category.label} to ${year.year}, ${exhibitSupplement ? 'prior exhibition mapping, year-level equivalence unverified' : `2024 source-derived edge, present in ${edge.rawDrawRecordIds.length} raw draw records`}`}
 				aria-pressed={selectedEdgeId === edge.id}
 				onfocus={(event) => previewKeyboard(event, { kind: 'edge', id: edge.id })}
@@ -227,13 +257,15 @@
 			{@const point = networkLayout.categoryPoints[category.id]}
 			{@const labelLines = layoutPreset === 'A' ? category.labelLines : [networkLayout.preset.categoryLabel.displayLabels?.[category.id] ?? category.label]}
 			{@const labelY = point.y + networkLayout.preset.categoryLabel.offsetY - (labelLines.length - 1) * networkLayout.preset.categoryLabel.lineStep}
-			<g data-category-id={category.id} role="button" tabindex="0" aria-label={`Focus category ${category.label}`} aria-pressed={selectedCategoryId === category.id}
+			{@const role = chapter ? chapterRole(chapterOneCategories.has(category.id), chapter) : undefined}
+			{@const categoryEnabled = interactionEnabled && (!role || role === 'current')}
+			<g data-category-id={category.id} data-reveal-role={role} opacity={role ? narrativeVisual[role] : undefined} class:inactive-hit={!categoryEnabled} role="button" tabindex={categoryEnabled ? 0 : -1} aria-hidden={categoryEnabled ? undefined : true} aria-label={`Focus category ${category.label}`} aria-pressed={selectedCategoryId === category.id}
 				onfocus={(event) => previewKeyboard(event, { kind: 'category', id: category.id })}
 				onblur={() => (keyboardPreview = undefined)}
 				onclick={() => lock({ kind: 'category', id: category.id })}
 				onkeydown={(event) => activate(event, { kind: 'category', id: category.id })}>
 			<circle class="category-hit" cx={point.x} cy={point.y} r="11" aria-hidden="true" />
-			<circle class="category-node" class:diffuse-node={effectMode === 'chapter1' && (category.id === 'mixed-black' || category.id === 'black')} class:crisp-node={effectMode === 'chapter1' && phase2CategoryIds.has(category.id)} class:inspected-node={inspectedCategoryId === category.id || selectedCategoryId === category.id} class:line-endpoint={inspectedEdge?.categoryId === category.id} cx={point.x} cy={point.y} r={layoutPreset === 'A' ? 2.2 : 4} aria-hidden="true" style={`--source-category-color:${category.color}`} />
+			<circle class="category-node" class:diffuse-node={(effectMode === 'chapter1' || role === 'current' || role === 'previous' || role === 'older') && (category.id === 'mixed-black' || category.id === 'black')} class:crisp-node={(effectMode === 'chapter1' || role === 'current' || role === 'previous' || role === 'older') && phase2CategoryIds.has(category.id)} class:inspected-node={inspectedCategoryId === category.id || selectedCategoryId === category.id} class:line-endpoint={inspectedEdge?.categoryId === category.id} cx={point.x} cy={point.y} r={layoutPreset === 'A' ? 2.2 : 4} aria-hidden="true" style={`--source-category-color:${category.color}`} />
 			<text class="category-label" class:inspected={inspectedCategoryId === category.id} x={point.x} y={labelY} text-anchor="middle" style={`font-size:${networkLayout.preset.categoryLabel.fontSize}px`}>
 				{#each labelLines as line, index (index)}
 					<tspan x={point.x} dy={index === 0 ? 0 : networkLayout.preset.categoryLabel.lineStep}>{line}</tspan>
@@ -246,9 +278,12 @@
 	<g class="year-layer">
 		{#each activeYears as year (year.id)}
 			{@const point = networkLayout.yearPoints[year.id]}
+			{@const role = chapter ? chapterRole(chapterOneYears.has(year.id), chapter) : undefined}
+			<g data-reveal-role={role} opacity={role && role !== 'current' ? narrativeVisual.yearSkeleton : undefined}>
 			<path class="year-tick" class:connected-year={inspectedYearIds.has(year.id)} class:context-year={Boolean(inspectedCategoryId) && !inspectedYearIds.has(year.id)} d={`M${point.x} ${point.y - 7} v14`} />
 			<circle class:speculative-node={year.role === 'speculative-marker'} class:connected-year={inspectedYearIds.has(year.id)} class:context-year={Boolean(inspectedCategoryId) && !inspectedYearIds.has(year.id)} class="year-node" cx={point.x} cy={point.y} r={layoutPreset === 'A' ? 1.6 : 3.5} />
 			<text class="year-label" class:connected-year={inspectedYearIds.has(year.id)} class:context-year={Boolean(inspectedCategoryId) && !inspectedYearIds.has(year.id)} x={point.x} y={point.y + networkLayout.preset.yearLabel.offsetY} text-anchor="middle" style={`font-size:${networkLayout.preset.yearLabel.fontSize}px`}>{year.year}{year.role === 'speculative-marker' ? '*' : ''}</text>
+			</g>
 		{/each}
 	</g>
 </svg>

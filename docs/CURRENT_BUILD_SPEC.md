@@ -37,6 +37,12 @@ Not a chronological encyclopedia of Census changes. The artwork interrogates the
 
 ## 3. Narrative and motion
 
+### Linear narrative study (November 19)
+- The approved direction is Opening → Chapter 1 → Chapter 2 → Chapter 3 → Chapter 4, with progressive reveal and bounded exploration. No scroll-driven progression or persistent chapter menu.
+- The prototype starts from **Begin** in Artwork View. The existing Opening montage leads into Chapter 1's title and staged red/blue reveal; **Continue** appears after the chapter settles. It clears inspection/selection and demotes Chapter 1 before showing a title-only Chapter 2 placeholder. No Chapter 2 treatment or later chapter is implemented by this study.
+- `NarrativeStage` owns Enter / Explore / Continue independently of `NetworkStage` focus. `src/config/narrative.ts` owns chapter order, editorial emphasis, role opacity and phase timing. Editorial membership may overlap; it does not assign Census first-appearance dates or change endpoints.
+- Initial line opacities: current `0.94`, previous `0.23`, older `0.10`, unrevealed `0.025`; retained year skeleton `0.44`. Opening runs `3400 ms`; Chapter 1 entry, memory pause and placeholder entry run `5400 / 900 / 720 ms`. The red and blue lines reveal from category to year over `3100 ms` each, starting `900 / 1450 ms` into Chapter 1. These are review settings, not artistic approval. Reduced motion skips the animated beats without skipping exploration.
+
 ### Opening — archival emergence
 - Only at the beginning: selected archival images, Census forms, photographs, maps and colored lines **emerge together as a visually dense composite**.
 - Archives recede/dissolve, revealing the clean, spacious horizontal data network.

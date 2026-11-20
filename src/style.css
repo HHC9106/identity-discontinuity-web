@@ -39,6 +39,7 @@ main.artwork-viewport { position: relative; width: min(100vw, 177.7778vh); heigh
 .focus-panel-kicker, .focus-panel-provenance, .focus-panel-caveat { font: 9px/1.4 "SFMono-Regular", Consolas, monospace; }
 .focus-panel-kicker { color: #aab3ae; }
 .category-focus-panel h2 { margin: 3px 0 5px; color: var(--paper); font: 400 22px/1.1 Georgia, "Times New Roman", serif; overflow-wrap: anywhere; }
+.category-focus-panel [data-focus-kind="category"] h2 { font-size: 28px; }
 .focus-panel-provenance { display: flex; flex-wrap: wrap; gap: 4px 14px; color: #c3cfca; }
 .focus-exhibition-count { color: var(--accent); }
 .focus-panel-caveat { margin: 3px 0 4px; color: #9da7a3; }
@@ -125,6 +126,14 @@ main, .topbar { width: min(1480px, 100% - 96px); margin-inline: auto; }
 .category-label { fill: #e1e4dc; font-family: "SFMono-Regular", Consolas, monospace; font-weight: 500; pointer-events: bounding-box; cursor: pointer; }
 .category-label:hover, [data-category-id]:focus-visible .category-label { fill: var(--accent); }
 .year-layer { pointer-events: none; }
+.narrative-reveal .inactive-hit, .narrative-reveal .inactive-hit * { pointer-events: none; }
+.narrative-reveal :is([data-category-id], .year-layer > g) { transition: opacity 180ms ease; }
+[data-narrative-phase="continue"] .narrative-reveal [data-reveal-role] { transition: opacity var(--chapter-memory) ease; }
+.chapter-entering :is(.category-layer, .year-layer) [data-reveal-role="current"] { animation: narrative-axis var(--chapter-enter) both; }
+.chapter-growth { transform-box: fill-box; transform-origin: left center; animation: narrative-growth var(--line-growth) var(--red-start) ease-in-out both; }
+.chapter-growth.blue-growth { animation-delay: var(--blue-start); }
+@keyframes narrative-axis { 0%, 12% { opacity: .44; } 42%, 100% { opacity: .94; } }
+@keyframes narrative-growth { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .year-tick { stroke: #879191; stroke-width: 1; transition: opacity 180ms ease, stroke 180ms ease; }
 .year-node { fill: var(--paper); stroke: #111617; stroke-width: 2; }
 .year-tick.connected-year, .year-node.connected-year { stroke: var(--accent); }
@@ -289,6 +298,9 @@ main, .topbar { width: min(1480px, 100% - 96px); margin-inline: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.chapter-entering [data-reveal-role] { animation: none !important; }
+	.chapter-growth { animation: none; }
+	[data-narrative-phase] .narrative-reveal [data-reveal-role] { transition: none; }
 	.category-node, .data-edge, .edge-halo, .year-tick, .year-label { transition: none; }
 	*, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 	.opening-overlay, .trace, .montage-note, .montage-center { animation-duration: var(--reduced-motion-duration, .01ms) !important; animation-delay: 0ms !important; }
