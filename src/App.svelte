@@ -232,16 +232,6 @@
 				<p class="gradient-note">ABSTRACT COLOR CONTINUUM ONLY · NOT A SKIN-TONE OR IDENTITY SCALE</p>
 			{/if}
 
-			<div class="study-note" aria-live="polite">
-				<span class="study-index">EDGE FOCUS</span>
-				{#if selectedEdge}
-					<p><b>{categories.find((category) => category.id === selectedEdge.categoryId)?.label}</b> connects to <b>{years.find((year) => year.id === selectedEdge.yearId)?.year}</b>.</p>
-					<span class="study-id">{selectedEdge.id}</span>
-				{:else}
-					<p class="empty-study-hint">Select or focus a source-derived edge to inspect its provenance.</p>
-					<span class="study-id">NO EDGE SELECTED</span>
-				{/if}
-			</div>
 			{/if}
 		</section>
 
